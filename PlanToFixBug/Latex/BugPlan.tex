@@ -1,0 +1,101 @@
+\documentclass[12pt]{report}
+\usepackage{fullpage}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[colorlinks,citecolor=DeepPink4,linkcolor=DarkRed‌​]{hyperref}
+\usepackage{url}
+\usepackage{listings}
+\usepackage{color}
+
+
+\usepackage[utf8]{inputenc}
+\usepackage{textcomp}
+\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% each section on new page
+\usepackage{etoolbox}
+\pretocmd{\section}{%
+  \ifnum\value{section}=0 \else\clearpage\fi
+}{}{}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\lstset{frame=tb,
+  language=Java,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+
+\renewcommand{\familydefault}{\sfdefault} % change font family to sans serif
+
+\begin{document}
+
+\title{Software Analytics - The Plan to fix the bug}
+\author{Talal El Afchal}
+\date{\today}
+\maketitle
+
+\section*{Bug replication}
+	As mentioned in the last report, the check-box in the dialog list disappears when the phone is in landscape mode. Therefore the bug is visible and can by replicated as shown in the previous report.
+
+
+\section*{Bug localization}
+	In order to localize the bug, the first step is to open the project in Android Studio and then from the main activity xml file we can retrieve the id of the \emph{BASIC LIST(CHECKBOX PROMPT)} button, that generates the dialog list in which we are interested, as shown in figure 1.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\textwidth]{screenshots/id.png}
+	\caption{Android Studio}
+\end{figure}
+	The next step is to use the id to figure out which method is implementing the button's functionality.\\ 
+	I found that the method \emph{showListCheckPrompt()} in \emph{Main Activity} class is called when the button is clicked. This method creates an object of type \emph{MaterialDialog.Builder} (Builder is an inner class), and several methods are invoked on this object as shown in the snippet code, but my guess is that the bug is in the \emph{show()} method since it shows the check-box in the dialog window.
+
+	\begin{lstlisting}
+    @OnClick(R.id.list_checkPrompt) public void showListCheckPrompt() {
+        new MaterialDialog.Builder(this)
+                .title(R.string.socialNetworks)
+                .items(R.array.socialNetworks)
+                .itemsCallback((dialog, view, which, text) -> showToast(which + ": " + text))
+                .checkBoxPromptRes(R.string.example_prompt, true, null)
+                .negativeText(android.R.string.cancel)
+                .show();
+    }
+\end{lstlisting}
+
+\section*{Changes impact}
+
+The \emph{show()} method is invoked once in \emph{onSelection()} method from \emph{FolderChooserDialog} class, and 31 times in 31 methods from \emph{MainActivity} class. Assuming that the bug is in the \emph{show()} method, modifying this method will affect the 2 classes.
+
+\section*{Plan}
+My plan is to go deeper and understand if the bug is in the \emph{show()} method, since it is just a guess for now, if it is not the case I will analyze the \emph{checkBoxPromptRes} method which creates the check-box dialog.
+
+\end{document}
+
+
+
+
+
+
+
+
