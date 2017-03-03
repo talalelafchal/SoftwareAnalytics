@@ -68,8 +68,9 @@
 	\includegraphics[width=0.6\textwidth]{screenshots/id.png}
 	\caption{Android Studio}
 \end{figure}
+\noindent
 	The next step is to use the id to figure out which method is implementing the button's functionality.\\ 
-	I found that the method \emph{showListCheckPrompt()} in \emph{Main Activity} class is called when the button is clicked. This method creates an object of type \emph{MaterialDialog.Builder} (Builder is an inner class), and several methods are invoked on this object as shown in the snippet code, but my guess is that the bug is in the \emph{show()} method since it shows the check-box in the dialog window.
+	I found that the method \emph{showListCheckPrompt()} in \emph{Main Activity} class is called when the button is clicked. This method creates an object of type \emph{MaterialDialog.Builder} (Builder is an inner class), and several methods are invoked on this object as shown in the snippet code. My first guess is that the bug is located in the \emph{show()} method since it shows the check-box in the dialog window.
 
 	\begin{lstlisting}
     @OnClick(R.id.list_checkPrompt) public void showListCheckPrompt() {
@@ -82,13 +83,22 @@
                 .show();
     }
 \end{lstlisting}
+\noindent
+  Performing a deeper analysis, \emph{show()} is invoked 31 times on 31 different \emph{MaterialDialog} objects and it is invoking the \emph{show()} method from \emph{MaterialDialog} class which is invoking the android API \emph{show()} method. Since the bug is not replicated in these 31 objects and must probably the bug is not in the Android API, I moved my focus to the other methods.\\
+  The next step is to analyze the \emph{checkBoxPromptRes()} method. This method sets the attributes of the checkBox variable of a MaterialDialog object. Performing a deeper analysis the \emph{DialogInit} class maps this variable to the xml file. This path leads us to \emph{md\_dialog\_list\_check.xml} file where I spot the bug.\\
+  By removing the items list, the check-box is visible in the landscape mode, as we can see in Figure 2 . My conclusion is that the \emph{ScrollView} is hiding the check-box and this why we can't see both of them in the landscape mode.
+  \begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\textwidth]{screenshots/checkbox.png}
+  \caption{Check box}
+\end{figure}
 
 \section*{Changes impact}
-
-The \emph{show()} method is invoked once in \emph{onSelection()} method from \emph{FolderChooserDialog} class, and 31 times in 31 methods from \emph{MainActivity} class. Assuming that the bug is in the \emph{show()} method, modifying this method will affect the 2 classes.
+The \emph{md\_dialog\_list\_check.xml} file creates the \emph{BASIC LIST (CHECK BOX PROMPT)}`s window interface only. If we make changes in this file, the changes will not affect other dialog windows or other files.
+ 
 
 \section*{Plan}
-My plan is to go deeper and understand if the bug is in the \emph{show()} method, since it is just a guess for now, if it is not the case I will analyze the \emph{checkBoxPromptRes} method which creates the check-box dialog.
+My plan is to create 2 layouts, one for the scroll-view and one for the check-box, instead of having them in the same layout.
 
 \end{document}
 
