@@ -11,16 +11,18 @@
 \usepackage{color}
 
 
+
 \usepackage[utf8]{inputenc}
 \usepackage{textcomp}
 \usepackage{mathtools}
 \usepackage{amsmath}
 \usepackage{fancyhdr}
-\pagestyle{fancy}
 
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+\rfoot{https://github.com/afollestad/material-dialogs/issues/1162}
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0pt}
-
 % each section on new page
 \usepackage{etoolbox}
 \pretocmd{\section}{%
@@ -48,31 +50,52 @@
 }
 
 
+
+
+
 \renewcommand{\familydefault}{\sfdefault} % change font family to sans serif
 
 \begin{document}
 
-\title{Software Analytics - The Plan to fix the bug}
+\title{Software Analytics - Bug details}
 \author{Talal El Afchal}
 \date{\today}
 \maketitle
+  \section*{Bug}
+\href{https://github.com/afollestad/material-dialogs}{Material$-$dialogs} is an Android customizable dialogs API. The Git repository has 8758 $\star$ and 1440 commits.
+The framework provides many types of dialog window, one of them is the \emph{Basic list} dialog which consists of a list of items and one check-box as shown in figure 1
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[height=0.4\textwidth]{screenshots/portrait.png}
+  \caption{portrait}
+\end{figure}
+\noindent When the phone is in the landscape mode the check-box disappears as shown in figure 2, but the check-box must be visible like it is in the portrait mode.\\ On November 4, 2016 a \href{https://github.com/afollestad/material-dialogs/issues/1162}{\emph{``bug''}} label was added and on Jan 4, 2017 a \emph{``help wanted''} label was also added.\\
+
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\textwidth]{screenshots/landscape.png}
+  \caption{landscape}
+\end{figure}
+
 
 \section*{Bug replication}
-	As mentioned in the last report, the check-box in the dialog list disappears when the phone is in landscape mode. Therefore the bug is visible and can by replicated as shown in the previous report.
+  As mentioned in the last report, the check-box in the dialog list disappears when the phone is in landscape mode. Therefore the bug is visible and can by replicated as shown in the previous report.
 
 
 \section*{Bug localization}
-	In order to localize the bug, the first step is to open the project in Android Studio and then from the main activity xml file we can retrieve the id of the \emph{BASIC LIST(CHECKBOX PROMPT)} button, that generates the dialog list in which we are interested, as shown in figure 1.
+  In order to localize the bug, the first step is to open the project in Android Studio and then from the main activity xml file we can retrieve the id of the \emph{BASIC LIST(CHECKBOX PROMPT)} button, that generates the dialog list in which we are interested, as shown in figure 1.
 \begin{figure}[H]
-	\centering
-	\includegraphics[width=0.6\textwidth]{screenshots/id.png}
-	\caption{Android Studio}
+  \centering
+  \includegraphics[width=0.6\textwidth]{screenshots/id.png}
+  \caption{Android Studio}
 \end{figure}
 \noindent
-	The next step is to use the id to figure out which method is implementing the button's functionality.\\ 
-	I found that the method \emph{showListCheckPrompt()} in \emph{Main Activity} class is called when the button is clicked. This method creates an object of type \emph{MaterialDialog.Builder} (Builder is an inner class), and several methods are invoked on this object as shown in the snippet code. My first guess is that the bug is located in the \emph{show()} method since it shows the check-box in the dialog window.
+  The next step is to use the id to figure out which method is implementing the button's functionality.\\ 
+  I found that the method \emph{showListCheckPrompt()} in \emph{Main Activity} class is called when the button is clicked. This method creates an object of type \emph{MaterialDialog.Builder} (Builder is an inner class), and several methods are invoked on this object as shown in the snippet code. My first guess is that the bug is located in the \emph{show()} method since it shows the check-box in the dialog window.
 
-	\begin{lstlisting}
+  \begin{lstlisting}
     @OnClick(R.id.list_checkPrompt) public void showListCheckPrompt() {
         new MaterialDialog.Builder(this)
                 .title(R.string.socialNetworks)
